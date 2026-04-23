@@ -114,7 +114,7 @@ pip install -r requirements.txt
 
 ### 3️⃣ Set up environment variables (`.env`)
 ```env
-DATABASE_URL=postgresql+psycopg2://<username>:<password>@localhost:5432/<database_name>
+DATABASE_URL=postgresql+psycopg2://<username>:<password>@<host>:<port>/<database_name>
 ```
 
 ### 4️⃣ Run database migrations/initialization
