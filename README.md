@@ -131,7 +131,6 @@ python run.py
 uvicorn app.main:app --reload
 ```
 
-API will be available at: 👉 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ### 6️⃣ Run Scraper
 ```bash
