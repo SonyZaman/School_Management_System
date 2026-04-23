@@ -1,90 +1,178 @@
-# School Management System (FastAPI)
+---
 
-A comprehensive FastAPI-based School Management System for managing students, teachers, courses, and enrollments. It also includes features for managing scraped educational resources.
+# 📘 School Management System (SMS) + Scraper
+
+A backend project built with **FastAPI** and **SQLAlchemy**, combined with a **web scraper** to demonstrate OOP concepts, CRUD operations, and business logic.
+
+---
 
 ## 🚀 Features
 
-- **🎓 Student Management**: CRUD operations for students (Name, Age, Email).
-- **👨‍🏫 Teacher Management**: CRUD operations for teachers (Name, Subject, Email, Phone).
-- **📚 Course Management**: Create and list courses with capacity and teacher assignment.
-- **📝 Enrollment System**: Enroll students into courses with capacity validation.
-- **🔍 Scraped Resources**: Import and manage educational resources scraped from external sources.
-- **🛠️ Database**: Powered by PostgreSQL and SQLAlchemy ORM.
-- **📜 Documentation**: Auto-generated Swagger (OpenAPI) and ReDoc documentation.
+### 🔹 Scraper
+* Scrapes book data from **books.toscrape.com**
+* Extracts: `title`, `url`, `category`, and `price/author`
+* Saves scraped data into:
+  * JSON file → `samples/scraped.json`
+  * Database table → `scraped_resources`
+* CLI support:
+  ```bash
+  python scraper/scrape.py --pages 3 --db
+  ```
 
-## 🛠️ Tech Stack
+### 🔹 School Management System
+* Built with **FastAPI** + **SQLAlchemy ORM**
+* Domain models:
+  * `Person` (abstract)
+  * `Student`, `Teacher` (inheritance)
+  * `Course` and `Enrollment` (many-to-many)
+* **Business rules**:
+  * Prevent duplicate enrollment
+  * Enforce course capacity
+* CRUD API endpoints for: Students, Teachers, Courses, Enrollments, and Scraped Resources
 
-- **Backend**: FastAPI
-- **Database**: PostgreSQL
-- **ORM**: SQLAlchemy
-- **Server**: Uvicorn
+---
 
-## 📋 Project Structure
+## ⚙️ Tech Stack
+
+* **Backend**: FastAPI
+* **ORM**: SQLAlchemy
+* **Database**: PostgreSQL (can run with SQLite for testing)
+* **Scraping**: Requests + BeautifulSoup
+* **Testing**: Pytest
+* **Migrations**: Alembic
+* **Server**: Uvicorn
+
+---
+
+## 📂 Project Structure
 
 ```text
 .
 ├── app/
-│   ├── main.py          # Entry point and API routes
-│   ├── models.py        # Database models (SQLAlchemy)
-│   ├── schemas.py       # Pydantic models for validation
-│   ├── crud.py          # Database logic (Create, Read, Update, Delete)
-│   └── database.py      # Database connection setup
-├── run.py               # Script for initializing database tables
-├── requirements.txt     # Project dependencies
-├── .env                 # Environment variables (DB URL)
-└── venv/                # Virtual environment
+│   ├── main.py          # FastAPI app with routes
+│   ├── models.py        # SQLAlchemy models
+│   ├── schemas.py       # Pydantic schemas (validation)
+│   ├── crud.py          # CRUD functions
+│   └── database.py      # DB connection/session
+├── scraper/
+│   └── scrape.py        # Scraper script
+├── tests/               # Pytest test cases
+├── samples/
+│   └── scraped.json     # Sample scraped output
+├── migrations/          # Alembic migrations
+├── run.py               # Database initialization script
+├── .env                 # DB connection config
+├── requirements.txt     # Dependencies
+└── README.md
 ```
 
-## ⚙️ Setup & Installation
+---
 
-### 1. Prerequisites
-- Python 3.8+
-- PostgreSQL installed and running
+## 📡 API Endpoints
 
-### 2. Clone the Project
+### Students
+* `POST /students` → Create student
+* `GET /students/{id}` → Fetch student by ID
+* `GET /students` → List all students
+
+### Teachers
+* `POST /teachers` → Create teacher
+* `GET /teachers/{id}` → Fetch teacher by ID
+* `GET /teachers` → List all teachers
+
+### Courses
+* `POST /courses` → Create course (with capacity)
+* `GET /courses/{id}` → Fetch course by ID
+* `GET /courses` → List all courses
+
+### Enrollments
+* `POST /students/{id}/enroll?course_id={course_id}` → Enroll student
+  * ❌ Prevents duplicates
+  * ❌ Checks capacity
+
+### Scraped Resources
+* `POST /import/scraped` → Import scraped JSON into DB
+* `GET /scraped_resources` → List scraped resources
+
+---
+
+## 🛠️ Setup & Run
+
+### 1️⃣ Clone the repo
 ```bash
-git clone <repository-url>
+git clone https://github.com/SonyZaman/School_Management_System.git
 cd "school management system"
 ```
 
-### 3. Create Virtual Environment
+### 2️⃣ Create virtual environment & install deps
 ```bash
 python -m venv venv
-source venv/bin/activate  # On MacOS/Linux
-# Or on Windows: venv\Scripts\activate
-```
-
-### 4. Install Dependencies
-```bash
+source venv/bin/activate   # Linux/Mac
+# venv\Scripts\activate    # Windows
 pip install -r requirements.txt
 ```
 
-### 5. Configure Environment Variables
-Create a `.env` file in the root directory (if not exists) and add your PostgreSQL connection string:
+### 3️⃣ Set up environment variables (`.env`)
 ```env
-DATABASE_URL=postgresql+psycopg2://<username>:<password>@localhost:5432/<database_name>
+DATABASE_URL=postgresql+psycopg2://postgres:yourpassword@localhost:5432/sms
 ```
 
-### 6. Initialize Database
-Run the following script to create the necessary tables in your PostgreSQL database:
+### 4️⃣ Run database migrations/initialization
 ```bash
+# Option 1: Using Alembic
+alembic upgrade head
+
+# Option 2: Using the initialization script
 python run.py
 ```
 
-##  Running the Application
-
-Start the FastAPI server using Uvicorn:
+### 5️⃣ Start FastAPI server
 ```bash
 uvicorn app.main:app --reload
 ```
 
+API will be available at: 👉 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
+### 6️⃣ Run Scraper
+```bash
+python scraper/scrape.py --pages 2 --db
+```
 
-## 📡 Key Endpoints
+### 7️⃣ Run Tests
+```bash
+pytest -v
+```
 
-- `POST /students` - Create a new student
-- `GET /students` - List all students
-- `POST /teachers` - Create a new teacher
-- `POST /courses` - Create a new course
-- `POST /students/{id}/enroll` - Enroll a student in a course
-- `GET /scraped_resources` - View imported educational resources
+---
+
+## ✅ Example Workflow
+
+1. Create a teacher → `/teachers`
+2. Create a course under that teacher → `/courses`
+3. Create a student → `/students`
+4. Enroll student in the course → `/students/{id}/enroll`
+5. Scrape book data → `python scraper/scrape.py --pages 1 --db`
+6. Fetch scraped data → `/scraped_resources`
+
+---
+
+## 🧩 OOP Pillars in the Project
+
+* **Abstraction** → `Person` class is abstract
+* **Inheritance** → `Student` and `Teacher` inherit from `Person`
+* **Encapsulation** → Database session management in `database.py`
+* **Polymorphism** → Students & Teachers behave differently when interacting with Courses
+
+---
+
+## 🧪 Tests Included
+
+* Enrollment rules (capacity, duplicate prevention)
+* API endpoint tests (student, teacher, course creation)
+* Scraper parsing test
+
+---
+
+## 👨‍💻 Author
+
+**SonyZaman** -- Python Intern Assignment
